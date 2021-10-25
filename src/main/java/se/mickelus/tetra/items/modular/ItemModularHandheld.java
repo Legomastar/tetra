@@ -240,6 +240,7 @@ public class ItemModularHandheld extends ItemModular {
         Hand hand = context.getHand();
         World world = context.getWorld();
         BlockPos pos = context.getPos();
+        BlockState blockState = world.getBlockState(pos);
         Direction facing = context.getFace();
         ItemStack itemStack = player.getHeldItem(hand);
 
@@ -275,6 +276,27 @@ public class ItemModularHandheld extends ItemModular {
 
             if (result.equals(ActionResultType.SUCCESS)) {
                 applyUsageEffects(player, itemStack, 2);
+            }
+            
+            BlockState blockState2 = null;
+            if (blockState.getBlock() instanceof CampfireBlock && blockState.get(CampfireBlock.LIT) && itemStack.getHarvestLevel(ToolType.SHOVEL ,null, null) >= 0) {
+
+                if (!world.isRemote()) {
+                    world.playEvent((PlayerEntity)null, 1009, pos, 0);
+                }
+
+                CampfireBlock.extinguish(world, pos, blockState);
+                blockState2 = blockState.with(CampfireBlock.LIT, Boolean.valueOf(false));
+
+                applyUsageEffects(player, itemStack, 1);
+                applyDamage(1, itemStack, player);
+                player.resetCooldown();
+                }
+            
+                if (blockState2 != null) {
+                if (!world.isRemote) {
+                    world.setBlockState(pos, blockState2, 11);
+                }
             }
         }
 
